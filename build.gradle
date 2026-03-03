@@ -1,0 +1,105 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.3.2'
+    id 'io.spring.dependency-management' version '1.1.5'
+    id 'war'
+    // Analyse de vulnérabilités OWASP
+    id 'org.owasp.dependencycheck' version '9.1.0'
+
+}
+
+
+bootWar {
+    archiveFileName = 'CartographieVue.war'
+}
+
+bootJar {
+    enabled = false
+}
+
+
+group = 'fr.cq.cartographievue'
+version = '1.0.0'
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+        vendor = JvmVendorSpec.MICROSOFT
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // --- SPRING CORE ---
+    implementation 'org.springframework.boot:spring-boot-starter'
+
+    // --- WEB MVC  ---
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
+
+
+    // --- JPA / Hibernate ---
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
+    testImplementation 'org.springframework.security:spring-security-test'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+    // --- Lombok ---
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
+
+    // --- Swagger / OpenAPI ---
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
+    // /!\ Forcer la version corrigée de commons-lang3 vulnérabilité trouvée sur la 3.14.0
+    implementation 'org.apache.commons:commons-lang3:3.18.0'
+
+    // --- Base de données ---
+    implementation 'com.mysql:mysql-connector-j:8.3.0'
+
+    //--- Connexion en SFTP/SSH
+    implementation 'com.jcraft:jsch:0.1.55'
+
+
+    //--- Apache pour lire les csv ---
+    implementation 'org.apache.commons:commons-csv:1.11.0'
+
+
+    // --- Logs ---
+    implementation 'org.springframework.boot:spring-boot-starter-logging'
+
+    // --- PDF ---
+    implementation 'com.openhtmltopdf:openhtmltopdf-core:1.0.10'
+    implementation 'com.openhtmltopdf:openhtmltopdf-pdfbox:1.0.10'
+
+    // --- Tests ---
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.assertj:assertj-core:3.25.3'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+// Empêche le retour d'une version vulnérable de commons-lang3
+configurations.all {
+    resolutionStrategy {
+        force 'org.apache.commons:commons-lang3:3.18.0'
+    }
+}
+
+// Configuration du plugin OWASP Dependency Check
+dependencyCheck {
+    // Niveau de sévérité à partir duquel la build échoue (CVSS >= 7)
+    failBuildOnCVSS = 7
+    suppressionFile = file("${projectDir}/dependency-check-suppressions.xml")
+    // Répertoire de sortie des rapports
+    outputDirectory = layout.buildDirectory.dir("reports/dependency-check").get().asFile
+    // Types de rapports générés
+    formats = ['HTML', 'JSON']
+}

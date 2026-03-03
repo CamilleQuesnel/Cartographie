@@ -1,0 +1,17 @@
+# Build
+/build/
+/.gradle/
+
+# Logs / IDE
+*.log
+.vscode/
+.idea/
+*.iml
+
+# Secrets / config locale
+src/main/resources/application.properties
+src/main/resources/application-dev.properties
+src/main/resources/application-prod.properties
+*.env
+# Fichiers sensibles
+src/main/resources/application.properties
